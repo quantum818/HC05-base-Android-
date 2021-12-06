@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">TEST1</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment,%1$s</string>
+    <string name="next">开启蓝牙</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">朱企平你妈死了</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+</resources>
