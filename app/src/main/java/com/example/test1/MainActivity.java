@@ -105,33 +105,38 @@ public class MainActivity extends AppCompatActivity {
                 mBtAdapter.enable();//打开蓝牙
                 BluetoothDevice bluetoothDevice = mBtAdapter.getRemoteDevice(Nana7mi);
                 connect(bluetoothDevice);
-                byte[] test=new byte[6];
+                byte[] test=new byte[7];
                 //编码天气数据
                 int i=0;
                 for(String str:dealfinal){
+                    boolean getpress=true;
                     if(i==0){
                         test[0]=(byte) (str.charAt(0));
                        // printLog(str+"\b");
                         printLog(test[i]+"\n");
                         i++;
                     }
-                    else if(i!=0&&i!=5){
-                        if(Integer.parseInt(str)>1024){
-                            str=String.valueOf((Integer.parseInt(str))/10);
-                        }
+                    else if(i>0&&i<=3){
                         test[i]=(byte) (Integer.parseInt(str));
+
                        // printLog(str+"\b");
-                        if(Integer.parseInt(str)==0){
-                           test[i]=(byte) '0';
-                        }
                         printLog(test[i]+"\n");
                        /* if(Integer.parseInt(str)==0){
                             test[i]=(byte) '0';
                         }*/
                         i++;
                     }
+                    else if(i==4){
+
+                            int tempF=Integer.parseInt(str)-(Integer.parseInt(str)/10)*10;
+                            test[i]=(byte) (Integer.parseInt(str)/10);
+                            printLog(test[i]+"\n");
+                            test[i+1]=(byte) (tempF);
+                            printLog(test[i+1]+"\n");
+
+                    }
                 }
-                test[5]=(byte)'X';
+                test[6]=(byte)'X';
                 printLog(test[i]+"\n");
                 delay(1000);
                 if(isBlueToothConnected){
@@ -227,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void printLog(String str) {
         Log.e("print", str);
-    }
+    }//新增post方法
     private static class weatherget extends Thread{
         public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
          //新建一个OkHttpClient对象
@@ -255,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-   private  class getdeal extends Thread{
+   private  class getdeal extends Thread{//对响应体简单编发发送五组数据给HC05对单个超过1024的数据将溢出部分分次传输
 
         public ArrayList<String> stringdeal(String ind){
             /*StringBuffer weathertu=new StringBuffer(ind.substring(ind.indexOf("text")+7,ind.indexOf("\"",ind.indexOf("text")+7)));
@@ -273,8 +278,8 @@ public class MainActivity extends AppCompatActivity {
             finalcode.add(String.valueOf(getcode));
             finalcode.add(beanOne.now.getFeelsLike());
             finalcode.add(beanOne.now.getWindSpeed());
-            finalcode.add(beanOne.now.getPressure());
             finalcode.add(beanOne.now.getCloud());
+            finalcode.add(beanOne.now.getPressure());
             return finalcode;
         }
         private char codeinfo(String ind){
@@ -332,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
-        public void run() {
+        public void run() {//线程咋结束啊
             if (Thread.interrupted()) {
                 printLog("return");
                 return;
