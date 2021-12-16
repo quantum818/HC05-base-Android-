@@ -11,13 +11,15 @@
 
     <application
             android:allowBackup="true"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/chigusa"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.TEST1"
             android:usesCleartextTraffic="true">
-
+        <activity android:name=".btdialog"
+                  android:theme="@android:style/Theme.Holo.Light.Dialog.MinWidth">
+        </activity>
         <activity
                 android:name=".MainActivity"
                 android:label="@string/app_name"
@@ -30,8 +32,7 @@
         </activity>
         <activity
                 android:name=".AboutActivity2"
-                android:label="@string/app_name">
-
+                android:label="关于">
         </activity>
     </application>
 
