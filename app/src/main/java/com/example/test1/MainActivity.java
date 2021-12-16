@@ -1,14 +1,19 @@
 package com.example.test1;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,6 +21,7 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import androidx.fragment.app.DialogFragment;
 import com.google.gson.Gson;
 import okhttp3.*;
 
@@ -27,28 +33,24 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import static android.content.ContentValues.TAG;
 public class MainActivity extends AppCompatActivity {
-    private Button zqpnmsl, lky;
+    private Button zqpnmsl, lky,test;
     private BluetoothAdapter mBtAdapter;
     private ConnectThread mConnectThread;
     public ConnectedThread nanami;
     public String PC="A4:B1:C1:3A:51:69";
     public String Nana7mi="98:D3:31:F4:24:F3";
+    public String MACallin;
     public String url="https://devapi.qweather.com/v7/weather/now?location=101210611&key=eb7a5d434b964a06900e32f4aa7c3507";
     public String warning="未得到数据";
     public int returnres=0;
     private boolean isBlueToothConnected = false;
     private boolean blccmp = false;
     private boolean readon = true;
-    private static final int GET_FIRST_DATA = 512;
-    private static final int GET_LAST_DATA = 1024;
-    private static final int CONNECT_SUCCESS = 2048;
-    private static final int OUT_OF_CONNECTED = 4096;
-    private static final int NOT_CONNECT = 9192;
-    private static final int START_CONNECT = 256;
-    private static final int GET_DATA = 128;
+    final private dialog dialogbt=new dialog();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
         }
         zqpnmsl = (Button) findViewById(R.id.zqpnmsl);
         lky = (Button) findViewById(R.id.lky);
+        test = (Button) findViewById(R.id.test);
+        test.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+               textdialog dialog=new textdialog();
+               dialog.showdialog(R.layout.dialog);
+            }
+        });
         lky.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -97,36 +108,52 @@ public class MainActivity extends AppCompatActivity {
                    } catch (IOException e) {
                        e.printStackTrace();
                    }
+                   printLog(String.valueOf(get));
                    getdeal get1=new getdeal();
                    dealfinal=get1.stringdeal(get);
                    printLog(String.valueOf(dealfinal));
                }
                 mBtAdapter = BluetoothAdapter.getDefaultAdapter();//本地蓝牙设备
                 mBtAdapter.enable();//打开蓝牙
-                BluetoothDevice bluetoothDevice = mBtAdapter.getRemoteDevice(Nana7mi);
-                connect(bluetoothDevice);
-                byte[] test=new byte[7];
-                //编码天气数据
-                int i=0;
-                for(String str:dealfinal){
-                    boolean getpress=true;
-                    if(i==0){
-                        test[0]=(byte) (str.charAt(0));
-                       // printLog(str+"\b");
-                        printLog(test[i]+"\n");
-                        i++;
-                    }
-                    else if(i>0&&i<=3){
-                        test[i]=(byte) (Integer.parseInt(str));
+                BluetoothDevice bluetoothDevice = null;
+                try {
+                    bluetoothDevice = mBtAdapter.getRemoteDevice(MACallin);
+                    connect(bluetoothDevice);
+                } catch (Exception e) {
+                    Toast warningempty = Toast.makeText(MainActivity.this, "MAC格式错误或为空", 240);
+                    warningempty.show();
+                    Dialog dialog = new Dialog(MainActivity.this);
+                    View warning1 = getLayoutInflater().inflate(R.layout.warning1,null);
+                    dialog.setContentView(warning1);
+                    dialog.show();
+                }
+                if(!isBlueToothConnected){
+                    Toast warningempty = Toast.makeText(MainActivity.this, "链接失败", 240);
+                    warningempty.show();
+                }
+                else{
+                    byte[] test=new byte[7];
+                    //编码天气数据
+                    int i=0;
+                    for(String str:dealfinal){
+                        boolean getpress=true;
+                        if(i==0){
+                            test[0]=(byte) (str.charAt(0));
+                            // printLog(str+"\b");
+                            printLog(test[i]+"\n");
+                            i++;
+                        }
+                        else if(i>0&&i<=3){
+                            test[i]=(byte) (Integer.parseInt(str));
 
-                       // printLog(str+"\b");
-                        printLog(test[i]+"\n");
+                            // printLog(str+"\b");
+                            printLog(test[i]+"\n");
                        /* if(Integer.parseInt(str)==0){
                             test[i]=(byte) '0';
                         }*/
-                        i++;
-                    }
-                    else if(i==4){
+                            i++;
+                        }
+                        else if(i==4){
 
                             int tempF=Integer.parseInt(str)-(Integer.parseInt(str)/10)*10;
                             test[i]=(byte) (Integer.parseInt(str)/10);
@@ -134,32 +161,33 @@ public class MainActivity extends AppCompatActivity {
                             test[i+1]=(byte) (tempF);
                             printLog(test[i+1]+"\n");
 
+                        }
                     }
-                }
-                test[6]=(byte)'X';
-                printLog(test[i]+"\n");
-                delay(1000);
-                if(isBlueToothConnected){
-                    Toast toast2 = Toast.makeText(MainActivity.this,"连接成功", 120);
-                    toast2.show();
-                }
-                delay(1000);
-                while(returnres!=67) {
-                    if(nanami!=null){
-                        Toast toast2 = Toast.makeText(MainActivity.this,"未收到单片机通信请重试", 120);
-                        toast2.show();
-                        nanami.start();
-                        delay(1000);
-                    }
-                    if(returnres==67) {
-                        Toast toast2 = Toast.makeText(MainActivity.this, "收到信息0x43", 120);
+                    test[6]=(byte)'X';
+                    printLog(test[i]+"\n");
+                    delay(1000);
+                    if(isBlueToothConnected){
+                        Toast toast2 = Toast.makeText(MainActivity.this,"连接成功", 120);
                         toast2.show();
                     }
-                }
-                if (nanami != null) {
-                    Toast toast2 = Toast.makeText(MainActivity.this, "开始传输天气信息", 120);
-                    toast2.show();
-                    nanami.write(test);
+                    delay(1000);
+                    while(returnres!=67) {
+                        if(nanami!=null){
+                            Toast toast2 = Toast.makeText(MainActivity.this,"未收到单片机通信请重试", 120);
+                            toast2.show();
+                            nanami.start();
+                            delay(1000);
+                        }
+                        if(returnres==67) {
+                            Toast toast2 = Toast.makeText(MainActivity.this, "收到信息0x43", 120);
+                            toast2.show();
+                        }
+                    }
+                    if (nanami != null) {
+                        Toast toast2 = Toast.makeText(MainActivity.this, "开始传输天气信息", 120);
+                        toast2.show();
+                        nanami.write(test);
+                    }
                 }
 /*                while(returnres!=67){
                         nanami.start();
@@ -207,7 +235,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+/*    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        // Get the layout inflater
+        LayoutInflater inflater = MainActivity.this.getLayoutInflater();
 
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(inflater.inflate(R.layout.dialog, null))
+                // Add action buttons
+                .setPositiveButton(R.string.getMac, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // sign in the user ...
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Dialog.this.getDialog().cancel();
+                    }
+                });
+        return builder.create();
+    }*/
+    public class textdialog extends Thread{
+        private void showdialog(int id){
+            Dialog dialog = new Dialog(MainActivity.this);
+            View view = getLayoutInflater().inflate(id,null);
+            dialog.setContentView(view);
+            Button getMac,cancel;
+            dialog.show();
+            getMac=(Button) view.findViewById(R.id.getMAC);
+            cancel=(Button) view.findViewById(R.id.cancel);
+            EditText mactext;
+            mactext=(EditText) view.findViewById(R.id.Mactext);
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.cancel();
+                }
+            });
+            getMac.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if((mactext.getText().length())==0){
+                        @SuppressLint("WrongConstant") Toast toast = Toast.makeText(MainActivity.this, "输入不能为空", 240);
+                        toast.show();
+                    }
+                    else{
+                        MACallin=((mactext.getText()).toString()).toUpperCase(Locale.ROOT);
+                        if(MACallin.equals("西园千草")){
+                            MACallin=Nana7mi;
+                        }
+                        printLog(MACallin);
+                        dialog.cancel();
+                    }
+                }
+            });
+        }
+}
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -432,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // This is a blocking call and will only return on a
                 // successful connection or an exception
-                isBlueToothConnected = true;
+                //isBlueToothConnected = true;
                 mmSocket.connect();
             } catch (IOException e) {
 
