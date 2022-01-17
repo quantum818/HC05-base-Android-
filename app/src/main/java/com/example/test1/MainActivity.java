@@ -37,7 +37,8 @@ import java.util.Locale;
 import java.util.UUID;
 import static android.content.ContentValues.TAG;
 public class MainActivity extends AppCompatActivity {
-    private Button zqpnmsl, lky,test;
+    private MyApplication allres;
+    private Button zqpnmsl, lky,test,debug;
     private BluetoothAdapter mBtAdapter;
     private ConnectThread mConnectThread;
     public ConnectedThread nanami;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         zqpnmsl = (Button) findViewById(R.id.zqpnmsl);
         lky = (Button) findViewById(R.id.lky);
         test = (Button) findViewById(R.id.test);
+        debug = (Button) findViewById(R.id.debug);
         test.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -94,6 +96,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        debug.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,
+                        Debug_Activity.class);
+                startActivity(intent);
+            }
+        });
         zqpnmsl.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("WrongConstant")
             @Override
@@ -107,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
                        get=getnow.run(url);
                    } catch (IOException e) {
                        e.printStackTrace();
+                       printLog("请求失败");
                    }
                    printLog(String.valueOf(get));
                    getdeal get1=new getdeal();
@@ -287,7 +299,11 @@ public class MainActivity extends AppCompatActivity {
                         if(MACallin.equals("西园千草")){
                             MACallin=Nana7mi;
                         }
-                        printLog(MACallin);
+                        else if((MACallin.toUpperCase()).equals("PC")){
+                            MACallin=PC;
+                        }
+                        allres.Macnow=MACallin;
+                        printLog("当前Mac"+MACallin);
                         dialog.cancel();
                     }
                 }
@@ -423,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
-        public void run() {//线程咋结束啊
+        public void run() {
             if (Thread.interrupted()) {
                 printLog("return");
                 return;
