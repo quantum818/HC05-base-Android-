@@ -17,8 +17,11 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.TEST1"
             android:usesCleartextTraffic="true">
-        <activity android:name=".btdialog"
-                  android:theme="@android:style/Theme.Holo.Light.Dialog.MinWidth">
+        <activity android:name=".Debug_Activity">
+        </activity>
+        <activity
+                android:name=".btdialog"
+                android:theme="@android:style/Theme.Holo.Light.Dialog.MinWidth">
         </activity>
         <activity
                 android:name=".MainActivity"
