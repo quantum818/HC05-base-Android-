@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import static com.example.test1.MyApplication.sendcomp;
+
 public class MyBluetooth {
     public static BluetoothAdapter mBtAdapter;
     private static ConnectThread mConnectThread;
@@ -57,9 +59,11 @@ public class MyBluetooth {
                 // successful connection or an exception
                 //isBlueToothConnected = true;
                 mmSocket.connect();
+                sendcomp.what=1551;
+                isBlueToothConnected = true;
             } catch (IOException e) {
-
-                printLog("unable to connect() socket " + e);
+                sendcomp.what=773;
+                printLog("T unable to connect() socket " + e);
                 //handler.sendEmptyMessage(NOT_CONNECT);
                 isBlueToothConnected = false;
                 // Close the socket
@@ -71,7 +75,7 @@ public class MyBluetooth {
                 return;
             }
 
-            mConnectThread = null;
+            //mConnectThread = null;
 
             isBlueToothConnected = true;
 
@@ -147,10 +151,14 @@ class ConnectedThread extends Thread {
                     // Bundle bundle = new Bundle();
                     //bundle.putInt("data", buffer[0]);
                     //msg.setData(bundle);
-
                     //handler.sendMessage(msg);
+                    sendcomp.what=1551;
+                    printLog("handle: "+String.valueOf(sendcomp.what));
+
                 } catch (IOException e) {
                     printLog("disconnected " + e);
+                    sendcomp.what=773;
+                    printLog("handle: "+String.valueOf(sendcomp.what));
 //                        handler.sendEmptyMessage(OUT_OF_CONNECTED);
                     break;
                 }
@@ -165,8 +173,10 @@ class ConnectedThread extends Thread {
      */
     public void write(byte[] buffer) {
         try {
-            mmOutStream.write(buffer);
+            sendcomp.what=1551;
+            mmOutStream.write(buffer); //java.io.IOException: Broken pipe
         } catch (IOException e) {
+            sendcomp.what=773;
             Log.e(TAG, "Exception during write", e);
         }
         //blccmp=false;
