@@ -28,27 +28,14 @@ public class Debug_Activity extends AppCompatActivity {
     private MyApplication allres=new MyApplication();
     private MyBluetooth bluetools=new MyBluetooth();
     private ConnectedThread nana7mi;
-    private static MyBluetooth.ConnectThread mConnectThread;
-    private String getinfo="";
-    Button send,empty;
-/*    Handler handler=new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.what==773){
-                send.setClickable(false);
-                send.setBackgroundColor(0xffff0000);
-            }
-            else if(msg.what==1551){
-                send.setClickable(true);
-            }
-        }
-    };*/
+    private MyBluetooth.ConnectThread mConnectThread;
+    public static String getinfo="";
+    static EditText sendmessage,getmessages;
+    Button send,empty,link;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_debug_);
-        EditText sendmessage,getmessages;
         sendmessage=findViewById(R.id.sendinfo);
         getmessages=findViewById(R.id.getinfo);
         send=(Button) findViewById(R.id.send);
@@ -63,6 +50,7 @@ public class Debug_Activity extends AppCompatActivity {
         try {
             bluetoothDevice = mybluetooth.getRemoteDevice(temp);
             bluetools.connect(bluetoothDevice);
+            printLog("activity_handle: "+String.valueOf(sendcomp.what));
             send.setEnabled(true);
             send.setText("发射!");
         } catch (Exception e) {
@@ -77,6 +65,7 @@ public class Debug_Activity extends AppCompatActivity {
         empty.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getinfo="";
                 getmessages.setText("");
             }
         });
@@ -109,9 +98,18 @@ public class Debug_Activity extends AppCompatActivity {
                         String timedata="->"+hour+"-"+min+"-"+sed+": "+sendmessagestr+"\n";
                         getinfo=getinfo+timedata;
                         getmessages.setText(getinfo);
+                        getmessages.setSelection(getmessages.getText().length());
                     }
                 }
             }
         });
+    }
+    @Override
+    protected void onDestroy() {
+        getinfo="";//清空收发字符串
+        super.onDestroy();
+        bluetools.nanami.cancel();
+        //bluetools.mConnectThread.cancel();
+        printLog("tread exit");
     }
 }
