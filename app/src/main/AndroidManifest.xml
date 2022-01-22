@@ -18,11 +18,6 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.TEST1"
             android:usesCleartextTraffic="true">
-        <service
-                android:name=".MyService"
-                android:enabled="true"
-                android:exported="true">
-        </service>
 
         <activity android:name=".Debug_Activity">
         </activity>
