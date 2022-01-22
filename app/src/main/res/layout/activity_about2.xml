@@ -46,7 +46,7 @@
             android:layout_marginLeft="36dp" android:layout_marginStart="36dp" android:layout_marginEnd="37dp"
             android:layout_marginRight="37dp" app:layout_constraintEnd_toEndOf="parent"/>
     <TextView
-            android:text="修复了与HC05连接传输天气的若干漏洞在xizeyoupan的要求下新增了蓝牙串口调试功能。\n已知的问题：\n接收框光标复位完全没有设置,多次发送可能导致线程阻塞，以及目前只支持GBK编码
+            android:text="修复了与HC05连接传输天气的若干bug在xizeyoupan的要求下新增了蓝牙串口调试功能。\n已知的问题：\n发送较大数据可能会导致内存溢出(我也不知道会不会)，多次发送可能导致线程阻塞，以及目前只支持GBK编码
 。\n强烈建议使用xizeyoupan的今典蓝牙助手"
             android:textSize="15dp"
             android:layout_width="326dp"
