@@ -5,13 +5,16 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 import android.content.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Scanner;
 import java.util.UUID;
 
 import static com.example.test1.MyApplication.sendcomp;
-
+import static com.example.test1.Debug_Activity.getmessages;
+import static com.example.test1.Debug_Activity.getinfo;
 public class MyBluetooth {
     public static BluetoothAdapter mBtAdapter;
     private static ConnectThread mConnectThread;
@@ -85,11 +88,13 @@ public class MyBluetooth {
             //handler.sendEmptyMessage(CONNECT_SUCCESS);
 
              nanami = new ConnectedThread(mmSocket);
+             nanami.run();
             //blccmp=true;
         }
 
         public void cancel() {
             try {
+                printLog("connect closed");
                 mmSocket.close();
             } catch (IOException e) {
                 printLog("close() of connect socket failed" + e);
@@ -98,14 +103,23 @@ public class MyBluetooth {
     }
 }
 class ConnectedThread extends Thread {
+    private void delay(long ind){
+        try
+        {
+            Thread.sleep(ind);//单位：毫秒
+        } catch (Exception e) {
+        }
+    }
+    //public static ArrayList<Byte> gotinfo= new ArrayList<Byte>();
+    public static ByteArrayOutputStream result = new ByteArrayOutputStream();
     public static final String TAG = "ContentValues";
 
     public void printLog(String str) {
         Log.e("print", str);
     }
-
+    private int allbytes=0;
     private final BluetoothSocket mmSocket;
-    private final InputStream mmInStream;
+    private InputStream mmInStream;
     private final OutputStream mmOutStream;
 
     public ConnectedThread(BluetoothSocket socket) {
@@ -128,6 +142,7 @@ class ConnectedThread extends Thread {
     }
 
     public void run() {
+        printLog("stream is built");
         if (Thread.interrupted()) {
             printLog("return");
             return;
@@ -141,8 +156,34 @@ class ConnectedThread extends Thread {
             synchronized (this) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    printLog(bytes + "bytes");
+                    while((bytes = mmInStream.read(buffer))!=-1) {
+                        delay(10);
+                        result.write(buffer,0,bytes);
+                        printLog(bytes + "bytes");
+                        allbytes=allbytes+bytes;
+                        if(mmInStream.available()==0){printLog("empty end");break;}//输入流中断退出
+                        if(bytes==256){
+                            run();
+                        }//数组溢出循环
+                        break;
+                    }
+                    printLog("total send: "+allbytes+" bytes");
+                    String getmessage="";
+                    try {
+                        getmessage=result.toString("GBK");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    if(getmessage.length()!=0){
+                        Calendar caltools=Calendar.getInstance();
+                        String hour= String.valueOf(caltools.get(Calendar.HOUR_OF_DAY));
+                        String min= String.valueOf(caltools.get(Calendar.MINUTE));
+                        String sed=String.valueOf(caltools.get(Calendar.SECOND));
+                        String timedata="<-"+hour+"-"+min+"-"+sed+": "+getmessage+"\n";
+                        getinfo=getinfo+timedata;
+                        getmessages.setText(getinfo);
+                        getmessages.setSelection(getmessages.getText().length());
+                    }
                     //returnres=(int)buffer[0];
                     //printLog(String.valueOf(returnres));
                     //if(returnres==67){warning="得到数据";}
@@ -154,7 +195,8 @@ class ConnectedThread extends Thread {
                     //handler.sendMessage(msg);
                     sendcomp.what=1551;
                     printLog("handle: "+String.valueOf(sendcomp.what));
-
+                    result=new ByteArrayOutputStream();
+                    allbytes=0;
                 } catch (IOException e) {
                     printLog("disconnected " + e);
                     sendcomp.what=773;
@@ -162,7 +204,9 @@ class ConnectedThread extends Thread {
 //                        handler.sendEmptyMessage(OUT_OF_CONNECTED);
                     break;
                 }
+                printLog("all_end");
             }
+            printLog("all2_end");
         }
     }
 
@@ -184,6 +228,7 @@ class ConnectedThread extends Thread {
 
     public void cancel() {
         try {
+            printLog("connect socket closed");
             mmSocket.close();
         } catch (IOException e) {
             Log.e(TAG, "close() of connect socket failed", e);
