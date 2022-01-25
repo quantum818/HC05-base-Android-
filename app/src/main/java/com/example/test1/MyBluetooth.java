@@ -14,7 +14,9 @@ import java.util.UUID;
 
 import static com.example.test1.MyApplication.sendcomp;
 import static com.example.test1.Debug_Activity.getmessages;
+import static com.example.test1.Debug_Activity.hexon;
 import static com.example.test1.Debug_Activity.getinfo;
+import static com.example.test1.Debug_Activity.hexinfo;
 public class MyBluetooth {
     public static BluetoothAdapter mBtAdapter;
     private static ConnectThread mConnectThread;
@@ -120,8 +122,8 @@ class ConnectedThread extends Thread {
     private int allbytes=0;
     private final BluetoothSocket mmSocket;
     private InputStream mmInStream;
+    private  String temp="";
     private final OutputStream mmOutStream;
-
     public ConnectedThread(BluetoothSocket socket) {
 
         printLog("create ConnectedThread");
@@ -149,7 +151,7 @@ class ConnectedThread extends Thread {
         }
         printLog("BEGIN mConnectedThread");
         byte[] buffer = new byte[256];
-        int bytes;
+        int bytes,step=0;
 
         // Keep listening to the InputStream while connected
         while (true) {
@@ -161,6 +163,10 @@ class ConnectedThread extends Thread {
                         result.write(buffer,0,bytes);
                         printLog(bytes + "bytes");
                         allbytes=allbytes+bytes;
+                        while(step!=256&&buffer[step]!=0){
+                            temp=temp+(Integer.toHexString(buffer[step])).substring(Integer.toHexString(buffer[step]).length()-2).toUpperCase()+" ";
+                            step++;
+                        }
                         if(mmInStream.available()==0){printLog("empty end");break;}//输入流中断退出
                         if(bytes==256){
                             run();
@@ -180,8 +186,15 @@ class ConnectedThread extends Thread {
                         String min= String.valueOf(caltools.get(Calendar.MINUTE));
                         String sed=String.valueOf(caltools.get(Calendar.SECOND));
                         String timedata="<-"+hour+"-"+min+"-"+sed+": "+getmessage+"\n";
+                        String hexdata="<-"+hour+"-"+min+"-"+sed+": "+temp+"\n";
+                        hexinfo=hexinfo+hexdata;
                         getinfo=getinfo+timedata;
-                        getmessages.setText(getinfo);
+                        if(hexon.isChecked()){
+                            getmessages.setText(hexinfo);
+                        }
+                        else{
+                            getmessages.setText(getinfo);
+                        }
                         getmessages.setSelection(getmessages.getText().length());
                     }
                     //returnres=(int)buffer[0];
