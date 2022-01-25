@@ -9,17 +9,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Locale;
 
 import static com.example.test1.MyApplication.sendcomp;
+import static java.lang.Math.abs;
 
 public class Debug_Activity extends AppCompatActivity {
     public void printLog(String str) {
@@ -30,7 +31,9 @@ public class Debug_Activity extends AppCompatActivity {
     private ConnectedThread nana7mi;
     private MyBluetooth.ConnectThread mConnectThread;
     public static String getinfo="";
+    public static String hexinfo="";
     static EditText sendmessage,getmessages;
+    static Switch hexon;
     Button send,empty,link;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,7 @@ public class Debug_Activity extends AppCompatActivity {
         getmessages=findViewById(R.id.getinfo);
         send=(Button) findViewById(R.id.send);
         empty=(Button) findViewById(R.id.empty);
+        hexon=(Switch) findViewById(R.id.hex);
         send.setEnabled(false);
         send.setText("寸止!");
         String temp=allres.Macnow;
@@ -62,6 +66,23 @@ public class Debug_Activity extends AppCompatActivity {
             dialog.setContentView(warning1);
             dialog.show();
         }
+        hexon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    hexon.setTextColor(0xffff0000);
+                    getmessages.setTextColor(0xffff0000);
+                    getmessages.setText(hexinfo);
+                    getmessages.setSelection(getmessages.getText().length());
+                }else {
+                    hexon.setTextColor(0xFFBABABA);
+                    getmessages.setTextColor(0xFF000000);
+                    getmessages.setText(getinfo);
+                    getmessages.setSelection(getmessages.getText().length());
+                    printLog("hexo off");
+                }
+            }
+        });
         empty.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,13 +112,25 @@ public class Debug_Activity extends AppCompatActivity {
                         bluetools.nanami.write(sendbytes);
                         //handler.sendMessage(sendcomp);
                         printLog("handle: "+String.valueOf(sendcomp.what));
+                        String hexoString="";
+                        for(int i=0;i<sendbytes.length;i++){
+                            hexoString=hexoString+(Integer.toHexString(sendbytes[i])).substring(Integer.toHexString(sendbytes[i]).length()-2).toUpperCase()+" ";//截取编码后最后两位得到GBK原码
+                        }
+                        printLog(hexoString);
                         Calendar caltools=Calendar.getInstance();
                         String hour= String.valueOf(caltools.get(Calendar.HOUR_OF_DAY));
                         String min= String.valueOf(caltools.get(Calendar.MINUTE));
                         String sed=String.valueOf(caltools.get(Calendar.SECOND));
-                        String timedata="->"+hour+"-"+min+"-"+sed+": "+sendmessagestr+"\n";
+                        String hexodata="->"+hour+":"+min+":"+sed+": "+hexoString+"\n";
+                        String timedata="->"+hour+":"+min+":"+sed+": "+sendmessagestr+"\n";
                         getinfo=getinfo+timedata;
-                        getmessages.setText(getinfo);
+                        hexinfo=hexinfo+hexodata;
+                        if(hexon.isChecked()){
+                            getmessages.setText(hexinfo);
+                        }
+                        else{
+                            getmessages.setText(getinfo);
+                        }
                         getmessages.setSelection(getmessages.getText().length());
                     }
                 }
@@ -107,6 +140,7 @@ public class Debug_Activity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         getinfo="";//清空收发字符串
+        hexinfo="";
         super.onDestroy();
         bluetools.nanami.cancel();
         //bluetools.mConnectThread.cancel();
