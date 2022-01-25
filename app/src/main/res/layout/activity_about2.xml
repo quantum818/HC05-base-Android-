@@ -65,6 +65,6 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="426dp" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="264dp" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="30dp" android:layout_marginStart="30dp" android:layout_marginEnd="267dp"
-            android:layout_marginRight="267dp" app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_marginLeft="36dp" android:layout_marginStart="36dp" android:layout_marginEnd="261dp"
+            android:layout_marginRight="261dp" app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
