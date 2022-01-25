@@ -1,13 +1,14 @@
 package com.example.test1;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.*;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
 import com.google.gson.Gson;
 import okhttp3.*;
@@ -60,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
-
+        startService();
+        stopService();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (BluetoothAdapter.getDefaultAdapter() == null) {
@@ -75,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("WrongConstant") Toast toast = Toast.makeText(MainActivity.this, bluetoothad, 60);
             toast.show();
         }
+        printLog("notice start");
+
+
         zqpnmsl = (Button) findViewById(R.id.zqpnmsl);
         lky = (Button) findViewById(R.id.lky);
         test = (Button) findViewById(R.id.test);
@@ -570,5 +576,12 @@ public class MainActivity extends AppCompatActivity {
                 printLog("close() of connect socket failed" + e);
             }
         }
+    }
+    public void startService() {
+        startService(new Intent(getBaseContext(), nana7mipost.class));
+    }
+    public void stopService() {
+        printLog("service stop");
+        stopService(new Intent(getBaseContext(), nana7mipost.class));
     }
 }
