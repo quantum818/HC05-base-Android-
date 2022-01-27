@@ -1,14 +1,14 @@
 package com.example.test1;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
+import android.annotation.TargetApi;
+import android.app.*;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
-import android.app.Notification;
 import com.google.gson.Gson;
 import okhttp3.*;
 
@@ -17,6 +17,7 @@ import java.io.IOException;
 public class nana7mipost extends Service {
     private String URL="https://api.bilibili.com/x/space/acc/info?mid=434334701";
     public nana7mipost() {
+        printLog("service start");
     }
 
     @Override
@@ -27,43 +28,61 @@ public class nana7mipost extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Let it continue running until it is stopped.
-        request_na nanami=new request_na();
-        String getinfo="";
-        printLog("request start");
-        try {
-            getinfo=nanami.run(URL);
-        } catch (IOException e) {
-            e.printStackTrace();
-            printLog("request failed");
-        }
-        printLog(getinfo);
-        int slocaltion=getinfo.indexOf("\"live_room\"");
-        int elocaltion=getinfo.indexOf(",\"birthday\"");
-        getinfo=getinfo.substring(slocaltion,elocaltion);
-        getinfo="{"+getinfo+"}";
-        printLog(getinfo);
-        Gson gson=new Gson();
-        nanamibean beanOne = gson.fromJson(getinfo, nanamibean.class);
-        int live= beanOne.live_room.getLiveStatus();
-        if(live==0){
-            printLog("海子姐还没播");
-            printLog(beanOne.live_room.getTitle());
-        }
-        else{
-            printLog("海子姐播了");
-        }
-        NotificationManager manager = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            manager = (NotificationManager) getSystemService(nana7mipost.NOTIFICATION_SERVICE);
-        }
-        Notification notification = new NotificationCompat.Builder(nana7mipost.this)
-                .setContentText("通知内容")
-                .setContentTitle("通知标题")
-                .setSmallIcon(R.drawable.nijisanji)
-                .setWhen(System.currentTimeMillis())
-                .build();
-        manager.notify(1,notification);
-        delay(100);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                request_na nanami=new request_na();
+                String getinfo="";
+                printLog("request start");
+                try {
+                    getinfo=nanami.run(URL);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    printLog("request failed");
+                }
+                printLog(getinfo);
+                int slocaltion=getinfo.indexOf("\"live_room\"");
+                int elocaltion=getinfo.indexOf(",\"birthday\"");
+                getinfo=getinfo.substring(slocaltion,elocaltion);
+                getinfo="{"+getinfo+"}";
+                printLog(getinfo);
+                Gson gson=new Gson();
+                nanamibean beanOne = gson.fromJson(getinfo, nanamibean.class);
+                int live= beanOne.live_room.getLiveStatus();
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    String channelId = "live";
+                    String channelName = "直播提醒";
+                    int importance = NotificationManager.IMPORTANCE_MAX;
+                    createNotificationChannel(channelId, channelName, importance);
+                }
+                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+                if(live==1){
+                    printLog("七海nana7mi正在直播");
+                    printLog(beanOne.live_room.getTitle());
+                    printLog("notice start");
+                    Notification notification = new NotificationCompat.Builder(nana7mipost.this, "live")
+                            .setAutoCancel(true)
+                            .setContentTitle("七海nana7mi正在直播")
+                            .setContentText("直播标题:"+beanOne.live_room.getTitle())
+                            .setWhen(System.currentTimeMillis())
+                            .setSmallIcon(R.drawable.nana7mi)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.nana7mi))
+                            .build();
+                    manager.notify(1, notification);
+                }
+                else{
+                    printLog("海子姐没播");
+                }
+                //创建Notification，传入Context和channelId
+                try {
+                    Thread.sleep(1800000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                run();
+            }
+        }).start();
         return START_STICKY;
     }
     private void printLog(String str) {
@@ -95,6 +114,18 @@ public class nana7mipost extends Service {
                 return response.body().string();
             }
         }
+    }
+    @TargetApi(Build.VERSION_CODES.O)
+    private void createNotificationChannel(String channelId, String channelName, int importance) {
+        NotificationChannel channel = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            channel = new NotificationChannel(channelId, channelName, importance);
+            channel.setBypassDnd(true);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{1000, 500, 2000});
+        }
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
     }
     private void delay(long ind){
         try
