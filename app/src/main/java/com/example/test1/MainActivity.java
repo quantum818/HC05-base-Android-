@@ -1,6 +1,7 @@
 package com.example.test1;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.*;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -63,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
         startService();
-        stopService();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (BluetoothAdapter.getDefaultAdapter() == null) {
@@ -78,9 +79,6 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("WrongConstant") Toast toast = Toast.makeText(MainActivity.this, bluetoothad, 60);
             toast.show();
         }
-        printLog("notice start");
-
-
         zqpnmsl = (Button) findViewById(R.id.zqpnmsl);
         lky = (Button) findViewById(R.id.lky);
         test = (Button) findViewById(R.id.test);
@@ -580,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
     public void startService() {
         startService(new Intent(getBaseContext(), nana7mipost.class));
     }
-    public void stopService() {
+   public void stopService() {
         printLog("service stop");
         stopService(new Intent(getBaseContext(), nana7mipost.class));
     }
