@@ -142,7 +142,9 @@ public class Debug_Activity extends AppCompatActivity {
         getinfo="";//清空收发字符串
         hexinfo="";
         super.onDestroy();
-        bluetools.nanami.cancel();
+        if(bluetools.nanami!=null){
+            bluetools.nanami.cancel();
+        }
         //bluetools.mConnectThread.cancel();
         printLog("tread exit");
     }
